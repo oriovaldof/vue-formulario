@@ -1,10 +1,11 @@
 <template>
   <div class="container">
     <div class="row">
-      <div class="col-6 bg-light">
+      <div class="col-6 bg-light" >
         <span class="fs-4">ENTRADA DE DADOS</span>
         <hr />
-        <form>
+        <!-- <form @submit.prevent="enviar($event)"> -->
+          <form @reset.prevent="resetar()">
           <div class="mb-3 row">
             <label class="col-3 col-form-label">Nome:</label>
             <div class="col">
@@ -209,7 +210,7 @@
           <div class="mb-3 row">
             <label class="col-3 col-form-label">Cor:</label>
             <div class="col">
-              <input type="color" class="form-color" />
+              <input type="color" class="form-color" v-model="form.cor" />
             </div>
           </div>
           <div class="mb-3 row">
@@ -221,26 +222,50 @@
                 min="0"
                 max="100"
                 step="1"
+                v-model="form.alcance"
               />
             </div>
           </div>
           <div class="mb-3 row">
             <label class="col-3 col-form-label">Escondido:</label>
             <div class="col">
-              <input type="hidden" class="form-control" />
+              <input type="hidden" class="form-control" v-model="form.escondido" />
             </div>
           </div>
           <div class="mb-3 row">
             <label class="col-3 col-form-label">Upload:</label>
             <div class="col">
-              <input type="file" class="form-control" />
+              <input type="file" class="form-control" multiple @change="selecionarArquivos($event)"/>
             </div>
           </div>
+          <div class="mb-3 row">
+            <label class="col-3 col-form-label">Descrição:</label>
+            <div class="col">
+              <textarea class="form-control" rows="3" v-model="form.descricao"></textarea>
+            </div>
+          </div>
+          <div class="mb-3 row">
+            <label class="col-3 col-form-label">Cursos:</label>
+            <div class="col">
+              <select class="form-select" v-model="form.curso">
+                <option value="" disabled>Selecione uma opção</option>
+                <option 
+                v-for="curso in cursos" 
+                :key="curso.id"
+                :value="curso.id"
+                >
+                  {{curso.id}} - {{curso.curso}}
+                </option>
+              </select>
+            </div>
+          </div>
+         
           <hr />
           <div class="mb-3 row">
             <div class="col d-flex justify-content-between">
-              <button class="btn btn-secondary" type="reset">Limpar</button>
-              <button class="btn btn-success" type="button">
+              <button class="btn btn-secondary" type="button" @click="resetar()">Limpar(btn)</button>
+              <button class="btn btn-secondary" type="reset">Limpar(reset)</button>
+              <button class="btn btn-success" type="button" @click="enviar($event)">
                 Enviar (btn)
               </button>
               <button class="btn btn-success" type="submit">
@@ -251,7 +276,7 @@
         </form>
       </div>
 
-      <div class="col-6 text-white bg-secondary">
+      <div class="col-6 text-white bg-secondary" :style="'background-color:'+form.cor+'!important'">
         <span class="fs-4">ESTADO DO OBJETO</span>
         <hr />
         <div class="mb-5 row">
@@ -310,10 +335,21 @@
         </div>
 
         <div class="mb-3 row">
-          <span>Data:{{form.data}} | {{moment(form.data).format('DD/MM/YYYY')}}</span>
+          <span>Data:{{form.data}} | {{$moment(form.data).format('DD/MM/YYYY')}}</span>
         </div>
         <div class="mb-3 row">
           <span>Data/hora local:{{form.dataHoraLocal}}</span>
+          <ul>
+            <li>{{$moment(form.dataHoraLocal).format('dddd')}}</li>
+            <li>{{$moment(form.dataHoraLocal).add(10,'days').format('LL')}}</li>
+            <li>{{$moment(form.dataHoraLocal).add(1,'months').format('LL')}}</li>
+            <li>{{$moment(form.dataHoraLocal).add(2,'years').format('LL')}}</li>
+            <li>{{$moment(form.dataHoraLocal).subtract(10,'days').format('LL')}}</li>
+            <li>{{$moment(form.dataHoraLocal).subtract(1,'months').format('LL')}}</li>
+            <li>{{$moment(form.dataHoraLocal).subtract(2,'years').format('LL')}}</li>
+            <li>{{$moment(form.dataHoraLocal).format('LLLL')}}</li>
+            <li>{{$moment(form.dataHoraLocal).add(2,'days').format('LLLL')}}</li>
+          </ul>
         </div>
         <div class="mb-3 row">
           <span>Mês:{{form.mes}}</span>
@@ -325,16 +361,30 @@
           <span>Hora:{{form.hora}}</span>
         </div>
         <div class="mb-3 row">
-          <span>Cor:</span>
+          <span>Cor:{{form.cor}}</span>
         </div>
         <div class="mb-3 row">
-          <span>Valor limite:</span>
+          <span>Valor limite:{{form.alcance}}</span>
         </div>
         <div class="mb-3 row">
-          <span>Escondido:</span>
+          <span>Escondido:{{form.escondido}}</span>
         </div>
         <div class="mb-3 row">
           <span>Upload:</span>
+          <ul>
+            <li v-for="(arquivo, index) in form.arquivos" :key="index">{{arquivo.name}}</li>
+          </ul>
+        </div>
+        <div class="mb-3 row">
+          <span>Descrição:</span> 
+          <!-- <pre>{{form.descricao}}</pre>         -->
+          <div style="white-space:pre">{{form.descricao}}</div>
+        </div>
+        <div class="mb-3 row">
+          <span>Curso:{{form.curso}}</span>
+        </div>
+        <div class="mb-3 row">
+          <span>Avaliação:{{form.avaliacao}}</span>
         </div>
       </div>
     </div>
@@ -342,13 +392,21 @@
 </template>
 
 <script>
-  import moment from 'moment'
-  // console.log(moment);
+import InputEstrelas from '@/components/InputEstrelas.vue';
 export default {
   name: "Formulario",
+  components:{
+    InputEstrelas
+  },
   data: () => ({
-    moment:{},
-    form: {
+    cursos:[
+      {id:1, curso:'Banco de Dados Relacionais'},
+      {id:2, curso:'Desenvolvimento Web Avançado com Vue'},
+      {id:3, curso:'Desenvolvimento Web Avançado com Laravel'},
+      {id:4, curso:'Curso Completo do Desenvolvedor NodeJS e MongoDB'}
+    ],
+    form:{},
+    formEstadoInicial: {
       nome: "Oriovaldo",
       email: "oriovaldof@gmail.com",
       senha: "123",
@@ -368,11 +426,38 @@ export default {
       dataHoraLocal:'',
       mes:'',
       semana:'',
-      hora:''
+      hora:'',
+      cor:'#6c757d',
+      alcance:5,
+      escondido:'Esse input esta escondido',
+      arquivos:{},
+      descricao:'',
+      curso:'', 
+      avaliacao:0
+
     },
-  }),
+  }), 
   created(){
-    this.moment = moment;
+    this.resetar();
+  },
+  methods:{
+    selecionarArquivos(event){
+      // console.log(event.target.files);
+      this.form.arquivos = event.target.files;
+    },
+    enviar(event){
+      console.log(event);
+
+      const formEnvio = Object.assign({},this.form);
+      console.log(formEnvio);
+
+      //uma requisição http para o back-end da aplicação
+      //promise que vai nos permitir tomar ações se a requisição deu erto ou errado
+
+    },
+    resetar(){
+      this.form = Object.assign({},this.formEstadoInicial);
+    }
   }
 };
 </script>
