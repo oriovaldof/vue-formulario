@@ -259,7 +259,13 @@
               </select>
             </div>
           </div>
-         
+          <div class="mb-3 row">
+            <label class="col-3 col-form-label">Avaliação:</label>
+            <div class="col">
+              <!-- <InputEstrelas :numero-estrelas="5" @avaliar="form.avaliacao = $event" /> -->
+              <InputEstrelas :numero-estrelas="5"  v-model:avaliar="form.avaliacao" />
+            </div>
+          </div>
           <hr />
           <div class="mb-3 row">
             <div class="col d-flex justify-content-between">
